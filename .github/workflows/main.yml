@@ -35,6 +35,13 @@ jobs:
           inlineScript: |
             az storage blob delete-batch --account-name humidity -s '$web' 
             az storage blob upload-batch --account-name humidity -d '$web' -s ./web
+      - name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.0.72
+          inlineScript: 
+            az cdn endpoint purge --content-paths  "/*" --profile-name "humidity" --name "humidity.azureedge.net" --resource-group "humidity-rg"
+        # Azure logout 
       - name: logout
         run: |
             az logout
