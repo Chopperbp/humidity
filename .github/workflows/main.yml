@@ -40,7 +40,7 @@ jobs:
         with:
           azcliversion: 2.0.72
           inlineScript: 
-            az cdn endpoint purge --content-paths  "/*" --profile-name "humidity" --name "humidity.azureedge.net" --resource-group "humidity-rg"
+            az cdn endpoint purge --content-paths  "/*" --profile-name "humidity" --name "humidity" --resource-group "humidity-rg"
         # Azure logout 
       - name: logout
         run: |
