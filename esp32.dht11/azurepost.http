@@ -1,0 +1,35 @@
+GET https://humidity.table.core.windows.net/humidity?sv=2019-12-12&ss=t&srt=o&sp=r&se=2030-11-22T05:39:57Z&st=2020-11-21T21:39:57Z&spr=https,http&sig=X1h60Hq6jT%2BenZQsMGXSVhhSyKH7FSYRYJnslUkmnnk%3D HTTP/1.1
+Accept: application/json;odata=nometadata  
+Accept-Charset: UTF-8
+###
+GET https://humidity.table.core.windows.net/humidity?$filter=Timestamp%20gt%20datetime'2020-11-21T16:00:00Z'&sv=2019-12-12&ss=t&srt=o&sp=r&se=2030-11-22T05:39:57Z&st=2020-11-21T21:39:57Z&spr=https,http&sig=X1h60Hq6jT%2BenZQsMGXSVhhSyKH7FSYRYJnslUkmnnk%3D HTTP/1.1
+Accept: application/json;odata=nometadata  
+Accept-Charset: UTF-8
+###
+
+PUT https://humidity.table.core.windows.net/humidity(PartitionKey='01', RowKey='1605967300')?sv=2019-12-12&ss=bfqt&srt=sco&sp=rwdlacupx&se=2021-11-21T22:14:47Z&st=2020-11-21T14:14:47Z&spr=https&sig=mM2GB85gRZrJ20wcsBk07Jdm1k%2Bnr3oBpe8O%2Fp8TUTw%3D HTTP/1.1
+content-type: application/json
+accept: 'application/json;odata=nometadata'
+accept-charset: 'UTF-8'
+
+{
+    "humidity": "34.00",
+    "temp": "24.00",
+    "heatindex": "23.34"
+}
+###
+POST https://humidity.table.core.windows.net/humidity?sv=2019-12-12&ss=t&srt=o&sp=rwdlacu&se=2030-11-21T22:29:25Z&st=2020-11-21T14:29:25Z&spr=https&sig=mchicspIWsY8tvI0BKkSdEuKlQxxlIDKEnooJ9o9YnM%3D HTTP/1.1
+content-type: application/json
+accept: application/json;odata=nometadata
+accept-charset: 'UTF-8'
+
+{  
+     "PartitionKey": "01",   
+     "RowKey": "160597002",   
+     "humudity": 34.00,   
+     "temp": 24.00,   
+     "heatindex": 23.34 
+}
+###
+(PartitionKey='01',RowKey='1605967300')
+{   "PartitionKey": "01",   "RowKey": 1605969651,   "humudity": 34.00,   "temp":24.00,   "heatindex":23.34 }

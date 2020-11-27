@@ -1,0 +1,165 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            /*background: #1D1F20;*/
+            padding: 16px;
+        }
+
+        canvas {
+            /*border: 1px dotted red;*/
+        }
+
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 80vh;
+            width: 80vw;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <button type="button" id="prev">&lt;</button>
+        <span id="datelb"></span>
+        <button type="button" id="next">&gt;</button>
+    </div>
+    <div class="chart-container">
+        <canvas id="chart"></canvas>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script>
+        const average = arr => arr.reduce((p, c) => p + c, 0) / arr.length;
+        document.addEventListener("DOMContentLoaded", async () => {
+            var prev = document.querySelector("#prev");
+            var next = document.querySelector("#next");
+            prev.addEventListener("click", prevHandler);
+            next.addEventListener("click", nextHandler);
+            var options = {
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        stacked: true,
+                        gridLines: {
+                            display: true,
+                        }
+                    }],
+                    xAxes: [{
+                        gridLines: {
+                            display: false
+                        }
+                    }]
+                }
+            };
+            const chart = new Chart('chart', {
+                type: 'line',
+                options,
+            });
+            const now = new Date()
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            let day = today;
+            draw(chart, day);
+
+            async function prevHandler() {
+                day.setDate(day.getDate() - 1);
+                draw(chart, day);
+            }
+            async function nextHandler() {
+                day.setDate(day.getDate() + 1);
+                draw(chart, day);
+            }
+        });
+        async function draw(chart, day) {
+            const datelb = document.querySelector("#datelb");
+            let dd = String(day.getDate()).padStart(2, '0');
+            let mm = String(day.getMonth() + 1).padStart(2, '0'); //January is 0!
+            let yyyy = day.getFullYear();
+            datelb.innerHTML = `${yyyy}.${mm}.${dd}`;
+            const result = await getResults(day);
+            const daymin = 24 * 60;
+            const groupByMin = 60;
+            const times = [...Array(daymin / groupByMin + 1)].map((_, x) => new Date(day.getTime() + x * groupByMin * 60 * 1000));
+            const results = [];
+            for (let i = 0; i < times.length - 1; i++) {
+                let current = times[i];
+                let next = times[i + 1]
+                let sub = result
+                    .filter(r => r.Timestamp.getTime() >= current.getTime() && r.Timestamp.getTime() < next.getTime());
+                results.push(
+                    {
+                        time: current,
+                        tempavg: average(sub.map(s => s.temp))
+                    });
+            };
+            /* let final = times.select((v, i) => {
+                 let values = results.where((r) => new Date(r.Timestamp).getTime() >= v.getTime() && new Date(r.Timestamp).getTime() < times[i + 1].getTime())
+                 return {
+                     v,
+                     values: values.toArray()
+                 } 
+             });*/
+            const labels = results.map((d) => {
+                return ("0" + d.time.getHours()).slice(-2) + ":" + ("0" + d.time.getMinutes()).slice(-2);
+
+            });
+            chart.data = {
+                "labels": labels,
+                "datasets": [
+                    {
+                        label: "Hőmérséklet",
+                        fill: false,
+                        backgroundColor: "#DE354C",
+                        borderColor: "#DE354C",
+                        data: results.map((e) => e.tempavg),
+                        tension: 0.4,
+                        pointRadius: 1
+                    },
+                    {
+                        label: "Páratartalom",
+                        fill: false,
+                        backgroundColor: "#38bbf2",
+                        borderColor: "#38bbf2",
+                        data: result.map((e) => e.humudity),
+                        tension: 0.4,
+                        pointRadius: 1
+                    },
+                ]
+            };
+            chart.update();
+        }
+        async function getResults(day) {
+            // ISO 8601 DateFormat 2020-11-24T12:16:55Z
+            // Table service 2020-11-23T23:00:07.9828097Z
+            const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d*)?Z$/;
+            function reviver(key, value) {
+                if (typeof value === "string" && dateFormat.test(value)) {
+                    return new Date(value);
+                }
+                return value;
+            }
+            const nextday = new Date(day.getTime());
+            nextday.setDate(day.getDate() + 1);
+            const response = await fetch(`https://humidity.table.core.windows.net/humidity?$filter=Timestamp%20ge%20datetime'${day.toISOString()}'%20and%20Timestamp%20lt%20datetime'${nextday.toISOString()}'&sv=2019-12-12&ss=t&srt=o&sp=r&se=2030-11-22T05:39:57Z&st=2020-11-21T21:39:57Z&spr=https,http&sig=X1h60Hq6jT%2BenZQsMGXSVhhSyKH7FSYRYJnslUkmnnk%3D`, {
+                method: 'GET', // *GET, POST, PUT, DELETE, etc.
+                mode: 'cors', // no-cors, *cors, same-origin
+                cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                    'Accept': 'application/json;odata=nometadata',
+                    'Accept-Charset': 'UTF-8'
+                },
+                redirect: 'follow', // manual, *follow, error
+            });
+            let text = await response.text();
+            let json = JSON.parse(text, reviver);
+            return json.value; // parses JSON response into native JavaScript objects
+        }
+    </script>
+</body>
+
+</html>

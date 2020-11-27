@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "esp32.dht11"
+		},
+		{
+			"path": "Web"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"ctime": "cpp",
+			"cmath": "cpp"
+		},
+		"liveServer.settings.multiRootWorkspaceName": "Client"
+	}
+}
